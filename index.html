@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>tic tac toe</title>
+    <style>
+      html,
+      body {
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .fields {
+        display: flex;
+        flex-wrap: wrap;
+        max-width: 300px;
+        margin: 20px auto;
+      }
+      .field {
+        background-color: #333;
+        height: 98px;
+        width: 98px;
+        margin: 1px;
+        color: #fff;
+        justify-content: center;
+        align-items: center;
+        display: flex;
+        cursor: pointer;
+        transition: all 0.3s ease-in-out;
+      }
+      .field:hover {
+        background-color: #555;
+      }
+      .field-animate {
+        font-size: 3em;
+      }
+      .field.field-animate:hover {
+        background-color: #333;
+      }
+      .green {
+        background-color: darkgreen;
+      }
+      .green.field:hover {
+        background-color: darkgreen;
+      }
+      .restart-btn {
+        background-color: #fff;
+        border: 1px solid;
+        padding: 10px 20px;
+        cursor: pointer;
+        transition: all 0.3s ease-in-out;
+      }
+      .restart-btn:hover {
+        background-color: #ccc;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="fields">
+      <div class="field" onclick="markField(this,0)"></div>
+      <div class="field" onclick="markField(this,1)"></div>
+      <div class="field" onclick="markField(this,2)"></div>
+      <div class="field" onclick="markField(this,3)"></div>
+      <div class="field" onclick="markField(this,4)"></div>
+      <div class="field" onclick="markField(this,5)"></div>
+      <div class="field" onclick="markField(this,6)"></div>
+      <div class="field" onclick="markField(this,7)"></div>
+      <div class="field" onclick="markField(this,8)"></div>
+    </div>
+    <button class="restart-btn" onclick="restart()">Restart</button>
+  </body>
+  <script>
+    var animateClass = "field-animate";
+    var victoryClass = "green";
+    var fields = new Array(9).fill(null);
+    var x = "✘";
+    var o = "◯";
+    var isX = true;
+    var victory = false;
+    var victoryLines = [
+      [0, 1, 2],
+      [3, 4, 5],
+      [6, 7, 8],
+      [0, 3, 6],
+      [1, 4, 7],
+      [2, 5, 8],
+      [0, 4, 8],
+      [2, 4, 6],
+    ];
+
+    function restart() {
+      fields = new Array(9).fill(null);
+      isX = true;
+      victory = false;
+      Array.from(document.getElementsByClassName("field")).forEach(function (
+        elem
+      ) {
+        elem.innerText = "";
+        elem.classList.remove(animateClass);
+        elem.classList.remove(victoryClass);
+      });
+    }
+
+    function markField(elem, fieldId) {
+      console.log(elem, fieldId, fields);
+      if (fields[fieldId] === null && !victory) {
+        var mark = isX ? x : o;
+        fields[fieldId] = mark;
+        elem.innerText = mark;
+        elem.classList.add(animateClass);
+        isX = !isX;
+        checkVictory();
+      }
+    }
+
+    function checkVictory() {
+      for (var i = 0; i < victoryLines.length; i++) {
+        var line = victoryLines[i];
+        if (
+          fields[line[0]] &&
+          fields[line[0]] === fields[line[1]] &&
+          fields[line[0]] === fields[line[2]]
+        ) {
+          victory = true;
+          Array.from(document.getElementsByClassName("field")).forEach(
+            function (elem, index) {
+              if (line.includes(index)) {
+                elem.classList.add(victoryClass);
+              }
+            }
+          );
+        }
+      }
+    }
+  </script>
+</html>
