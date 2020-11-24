@@ -123,7 +123,7 @@
   <script>
     var animateClass = "field-animate";
     var victoryClass = "green";
-    var fields = new Array(9).fill(null);
+    var fields = getNewFields();
     var x = "✘";
     var o = "◯";
     var isX = true;
@@ -140,13 +140,19 @@
     ];
     var playWithComputer = true;
 
+    function getNewFields() {
+      return Array.from(Array(9).keys());
+    }
+
+    function getElements() {
+      return Array.from(document.getElementsByClassName("field"));
+    }
+
     function restart() {
-      fields = new Array(9).fill(null);
+      fields = getNewFields();
       isX = true;
       victory = false;
-      Array.from(document.getElementsByClassName("field")).forEach(function (
-        elem
-      ) {
+      getElements().forEach(function (elem) {
         elem.innerText = "";
         elem.classList.remove(animateClass);
         elem.classList.remove(victoryClass);
@@ -158,47 +164,59 @@
     }
 
     function markField(elem, fieldId) {
-      if (!victory && fields[fieldId] === null) {
+      if (!victory && isFieldAvailable(fields[fieldId])) {
         setMark(elem, fieldId);
         computerTurn();
       }
     }
 
+    function isFieldAvailable(field) {
+      return field !== x && field !== o;
+    }
+
     function setMark(elem, fieldId) {
-      if (fields[fieldId] === null) {
+      if (isFieldAvailable(fields[fieldId])) {
         var mark = isX ? x : o;
         fields[fieldId] = mark;
         elem.innerText = mark;
         elem.classList.add(animateClass);
         isX = !isX;
-        checkVictory();
+        var winner = getWinner();
+        if (winner) {
+          victory = true;
+          getElements().forEach(function (elem, index) {
+            if (winner.line.includes(index)) {
+              elem.classList.add(victoryClass);
+            }
+          });
+        }
       }
-    }
-
-    function getRandomInt(max) {
-      return Math.floor(Math.random() * Math.floor(max));
     }
 
     function computerTurn() {
       if (playWithComputer && !victory) {
-        setTimeout(function () {
-          var emptyFieldIds = fields.reduce(function (res, i, index) {
-            if (i === null) {
-              res.push(index);
-            }
-            return res;
-          }, []);
-          var length = emptyFieldIds.length;
-          var randomId = getRandomInt(length);
-          var arr = Array.from(document.getElementsByClassName("field"));
-          var fieldId = emptyFieldIds[randomId];
-          var elem = arr[fieldId];
-          setMark(elem, fieldId);
-        }, 500);
+        var mark = isX ? x : o;
+        var field = minimax(fields, mark);
+        var arr = getElements();
+        if (field.index !== undefined) {
+          setTimeout(function () {
+            var elem = arr[field.index];
+            setMark(elem, field.index);
+          }, 500);
+        }
       }
     }
 
-    function checkVictory() {
+    function getEmptyFieldIds(fields) {
+      return fields.reduce(function (res, i, index) {
+        if (isFieldAvailable(i)) {
+          res.push(index);
+        }
+        return res;
+      }, []);
+    }
+
+    function getWinner() {
       for (var i = 0; i < victoryLines.length; i++) {
         var line = victoryLines[i];
         if (
@@ -206,16 +224,69 @@
           fields[line[0]] === fields[line[1]] &&
           fields[line[0]] === fields[line[2]]
         ) {
-          victory = true;
-          Array.from(document.getElementsByClassName("field")).forEach(
-            function (elem, index) {
-              if (line.includes(index)) {
-                elem.classList.add(victoryClass);
-              }
-            }
-          );
+          return {
+            mark: fields[line[0]],
+            line: line,
+          };
         }
       }
+      return null;
+    }
+
+    function minimax(fields, mark) {
+      var emptyFieldIds = getEmptyFieldIds(fields);
+
+      var winner = getWinner();
+      if (winner && winner.mark === x) {
+        return { score: -10 };
+      }
+      if (winner && winner.mark === o) {
+        return { score: 10 };
+      }
+      if (emptyFieldIds.length === 0) {
+        return { score: 0 };
+      }
+
+      var moves = [];
+
+      for (var i = 0; i < emptyFieldIds.length; i++) {
+        var move = {};
+        move.index = fields[emptyFieldIds[i]];
+        fields[emptyFieldIds[i]] = mark;
+
+        if (mark === o) {
+          var result = minimax(fields, x);
+          move.score = result.score;
+        } else {
+          var result = minimax(fields, o);
+          move.score = result.score;
+        }
+
+        fields[emptyFieldIds[i]] = move.index;
+        moves.push(move);
+      }
+
+      var bestMove;
+
+      if (mark === o) {
+        var bestScore = -11;
+        for (var i = 0; i < moves.length; i++) {
+          if (moves[i].score > bestScore) {
+            bestScore = moves[i].score;
+            bestMove = i;
+          }
+        }
+      } else {
+        var bestScore = 11;
+        for (var i = 0; i < moves.length; i++) {
+          if (moves[i].score < bestScore) {
+            bestScore = moves[i].score;
+            bestMove = i;
+          }
+        }
+      }
+
+      return moves[bestMove];
     }
   </script>
 </html>
