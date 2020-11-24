@@ -40,14 +40,14 @@
         background-color: #333;
       }
       .green {
-        background-color: darkgreen;
+        background-color: #129258;
       }
       .green.field:hover {
-        background-color: darkgreen;
+        background-color: #129258;
       }
       .restart-btn {
         background-color: #fff;
-        border: 1px solid;
+        border: 1px solid #555;
         padding: 10px 20px;
         cursor: pointer;
         transition: all 0.3s ease-in-out;
@@ -55,9 +55,57 @@
       .restart-btn:hover {
         background-color: #ccc;
       }
+      input[type="checkbox"] {
+        display: none;
+      }
+
+      input[type="checkbox"] + label {
+        display: block;
+        position: relative;
+        cursor: pointer;
+        margin: 20px 20px 10px;
+      }
+
+      input[type="checkbox"] + label:before {
+        content: " ";
+        display: block;
+        width: 18px;
+        height: 18px;
+        border: 1px solid #555;
+        position: absolute;
+        left: -27px;
+        top: 0;
+        transition: all 0.3s ease-in-out;
+      }
+      input[type="checkbox"] + label:hover:before {
+        background-color: #ccc;
+      }
+
+      input[type="checkbox"] + label:after {
+        content: "✔";
+        color: #129258;
+        opacity: 0;
+        transform: scale(0);
+        position: absolute;
+        left: -24px;
+        top: 0;
+        transition: all 0.3s ease-in-out;
+      }
+      input[type="checkbox"]:checked + label:after {
+        border-radius: 0;
+        opacity: 1;
+        transform: scale(1);
+      }
     </style>
   </head>
   <body>
+    <input
+      type="checkbox"
+      name="computer"
+      id="computer"
+      onchange="toggleComputer(this)"
+    />
+    <label for="computer"> Play with computer </label>
     <div class="fields">
       <div class="field" onclick="markField(this,0)"></div>
       <div class="field" onclick="markField(this,1)"></div>
@@ -89,6 +137,7 @@
       [0, 4, 8],
       [2, 4, 6],
     ];
+    var playWithComputer = false;
 
     function restart() {
       fields = new Array(9).fill(null);
@@ -103,15 +152,48 @@
       });
     }
 
+    function toggleComputer(item) {
+      playWithComputer = item.checked;
+    }
+
     function markField(elem, fieldId) {
-      console.log(elem, fieldId, fields);
-      if (fields[fieldId] === null && !victory) {
+      if (!victory) {
+        setMark(elem, fieldId);
+        computerTurn();
+      }
+    }
+
+    function setMark(elem, fieldId) {
+      if (fields[fieldId] === null) {
         var mark = isX ? x : o;
         fields[fieldId] = mark;
         elem.innerText = mark;
         elem.classList.add(animateClass);
         isX = !isX;
         checkVictory();
+      }
+    }
+
+    function getRandomInt(max) {
+      return Math.floor(Math.random() * Math.floor(max));
+    }
+
+    function computerTurn() {
+      if (playWithComputer && !victory) {
+        setTimeout(function () {
+          var emptyFieldIds = fields.reduce(function (res, i, index) {
+            if (i === null) {
+              res.push(index);
+            }
+            return res;
+          }, []);
+          var length = emptyFieldIds.length;
+          var randomId = getRandomInt(length);
+          var arr = Array.from(document.getElementsByClassName("field"));
+          var fieldId = emptyFieldIds[randomId];
+          var elem = arr[fieldId];
+          setMark(elem, fieldId);
+        }, 500);
       }
     }
 
