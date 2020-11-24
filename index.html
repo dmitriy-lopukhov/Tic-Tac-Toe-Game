@@ -103,6 +103,7 @@
       type="checkbox"
       name="computer"
       id="computer"
+      checked="true"
       onchange="toggleComputer(this)"
     />
     <label for="computer"> Play with computer </label>
@@ -137,7 +138,7 @@
       [0, 4, 8],
       [2, 4, 6],
     ];
-    var playWithComputer = false;
+    var playWithComputer = true;
 
     function restart() {
       fields = new Array(9).fill(null);
@@ -157,7 +158,7 @@
     }
 
     function markField(elem, fieldId) {
-      if (!victory) {
+      if (!victory && fields[fieldId] === null) {
         setMark(elem, fieldId);
         computerTurn();
       }
